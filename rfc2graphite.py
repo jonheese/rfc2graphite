@@ -39,13 +39,14 @@ class Rfc2Graphite:
         if method == 'GET':
             r = requests.get(
                 url,
+                headers=headers,
                 auth=self.auth,
             )
         elif method == 'POST':
             r = requests.post(
                 url,
                 data=payload,
-                headers=self.headers,
+                headers=headers,
                 auth=self.auth,
             )
         else:
