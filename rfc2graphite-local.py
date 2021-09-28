@@ -18,14 +18,15 @@ class Rfc2GraphiteLocal:
         "Content-Type": "text/xml",
     }
 
-    def __init__(self, hostname, device):
+    def __init__(self):
         with open('./config.json', 'r') as f:
             config = json.load(f)
-            self.auth = (config.get('local_user'), config.get('local_password'))
-            self.carbon_server = config.get('carbon_server')
-            self.carbon_port = config.get('carbon_port')
-        self.api_url = f'https://{hostname}/cgi-bin/post_manager'
-        self.device = device
+        self.auth = (config.get('local_user'), config.get('local_password'))
+        self.carbon_server = config.get('carbon_server')
+        self.carbon_port = config.get('carbon_port')
+        self.hostname = config.get('hostname')
+        self.device = config.get('device')
+        self.api_url = f'https://{self.hostname}/cgi-bin/post_manager'
         # Suppress only the single warning from urllib3 needed.
         requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
 
@@ -87,10 +88,7 @@ class Rfc2GraphiteLocal:
         sock.send(s.encode())
 
 if __name__ == '__main__':
-    rfc2graphite_local = Rfc2GraphiteLocal(
-        hostname='192.168.27.132',
-        device='0x0007810001ba5640'
-    )
+    rfc2graphite_local = Rfc2GraphiteLocal()
     for delay in [0, 15, 30, 45]:
         try:
             rfc2graphite_local.insert_data(delay)

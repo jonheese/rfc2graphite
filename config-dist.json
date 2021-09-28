@@ -5,4 +5,6 @@
     "carbon_port": 2003,
     "local_user": "<CLOUD_ID>",
     "local_password": "<INSTALLATION_CODE>"
+    "hostname": "hostname-or-ip.domain.tld",
+    "device": "0x0000000000000"
 }
