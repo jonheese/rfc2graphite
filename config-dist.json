@@ -1,6 +1,6 @@
 {
     "login": "your@email.address",
-    "password": "yourPassword"
+    "password": "yourPassword",
     "carbon_server": "your.carbon.server",
     "carbon_port": 2003,
     "local_user": "<CLOUD_ID>",
