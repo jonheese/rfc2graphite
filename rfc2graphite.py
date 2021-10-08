@@ -17,7 +17,7 @@ class Rfc2Graphite:
 
         if 'login' not in config.keys() or 'password' not in config.keys():
             raise RuntimeError(
-                'login and password must be specified in config.json'
+                'Login and password must be specified in config.json'
             )
         self.default_headers = {
             'accept': 'application/json',
