@@ -1,8 +1,5 @@
 #!/bin/env python3
 
-# curl -k --user 0061ce:94fbb0c3e890c94f -X POST -H "Content-Type: text/xml" -H "Content-Length: 165" -d "<Command><Name>device_query</Name><DeviceDetails><HardwareAddress>0x0007810001ba5640</HardwareAddress></DeviceDetails><Components><All>Y</All></Components></Command>" https://192.168.27.132/cgi-bin/post_manager
-# <Command><Name>device_query</Name><DeviceDetails><HardwareAddress>0x0007810001ba5640</HardwareAddress></DeviceDetails><Components><all>Y</all></Components></Command>
-
 import json
 import requests
 import socket
@@ -24,9 +21,8 @@ class Rfc2GraphiteLocal:
         self.auth = (config.get('local_user'), config.get('local_password'))
         self.carbon_server = config.get('carbon_server')
         self.carbon_port = config.get('carbon_port')
-        self.hostname = config.get('hostname')
         self.device = config.get('device')
-        self.api_url = f'https://{self.hostname}/cgi-bin/post_manager'
+        self.api_url = f'https://{config.get("hostname")}/cgi-bin/post_manager'
         # Suppress only the single warning from urllib3 needed.
         requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
 
@@ -62,19 +58,14 @@ class Rfc2GraphiteLocal:
         command.append(components)
         response = xmltodict.parse(self.do_api_call(etree.tostring(command)))
         demand = None
-        try:
-            variables = response.get("Device").get("Components").get("Component").get("Variables").get("Variable")
-            for variable in variables:
-                if variable.get("Name") == "zigbee:InstantaneousDemand":
-                    demand = variable.get("Value")
-                    break
-        except Exception as e:
-            #print(f'Encountered exception getting data: {e}')
-            pass
+        variables = response.get("Device").get("Components").get("Component").get("Variables").get("Variable")
+        for variable in variables:
+            if variable.get("Name") == "zigbee:InstantaneousDemand":
+                demand = variable.get("Value")
+                break
         return demand
 
-    def insert_data(self, offset=0):
-        timestamp = datetime.now().replace(second=offset)
+    def insert_data(self, timestamp):
         while datetime.now() < timestamp:
             time.sleep(0.5)
         demand = self.get_demand()
@@ -88,9 +79,13 @@ class Rfc2GraphiteLocal:
         sock.send(s.encode())
 
 if __name__ == '__main__':
+    start_time = datetime.now()
     rfc2graphite_local = Rfc2GraphiteLocal()
-    for delay in [0, 15, 30, 45]:
+    exceptions = []
+    for seconds_offset in [0, 15, 30, 45]:
         try:
-            rfc2graphite_local.insert_data(delay)
+            rfc2graphite_local.insert_data(start_time.replace(second=seconds_offset))
         except Exception as e:
-            traceback.print_exc()
+            exceptions.append(traceback.format_exc())
+            if len(exceptions) >= 4:
+                print("\n".join(exceptions))
