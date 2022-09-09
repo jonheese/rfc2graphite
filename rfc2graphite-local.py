@@ -86,6 +86,8 @@ if __name__ == '__main__':
         try:
             rfc2graphite_local.insert_data(start_time.replace(second=seconds_offset))
         except Exception as e:
-            exceptions.append(traceback.format_exc())
-            if len(exceptions) >= 4:
-                print("\n".join(exceptions))
+            if start_time.hour != 10 or start_time.minute < 8 or start_time.minute > 10:
+                exceptions.append(traceback.format_exc())
+                # Only report exceptions if all 4 checks this minute failed (and only after the last one)
+                if len(exceptions) >= 4:
+                    print("\n".join(exceptions))
